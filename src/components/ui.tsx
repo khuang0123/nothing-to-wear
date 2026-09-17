@@ -1,24 +1,28 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Garment, GarmentOrigin, Guardrail } from '../types'
+import { LookFigure } from './LookFigure'
 
 export function TopBar({
   title,
   back,
+  onBack,
   right,
 }: {
   title?: ReactNode
   back?: boolean | string
+  /** Handles "back" in-screen, for overlays that are not routes. */
+  onBack?: () => void
   right?: ReactNode
 }) {
   const navigate = useNavigate()
   return (
     <header className="topbar">
-      {back ? (
+      {back || onBack ? (
         <button
           className="back"
           aria-label="Go back"
-          onClick={() => (typeof back === 'string' ? navigate(back) : navigate(-1))}
+          onClick={() => (onBack ? onBack() : typeof back === 'string' ? navigate(back) : navigate(-1))}
         >
           ‹
         </button>
@@ -31,14 +35,18 @@ export function TopBar({
 }
 
 const ORIGIN_LABEL: Record<GarmentOrigin, { text: string; cls: string }> = {
-  user: { text: 'Your photo', cls: 'mine' },
+  user: { text: 'Yours', cls: 'mine' },
   predicted: { text: 'We guessed', cls: 'guess' },
-  'ai-suggested': { text: 'AI image', cls: 'ai' },
+  'ai-suggested': { text: 'AI idea', cls: 'ai' },
 }
 
-export function OriginBadge({ origin }: { origin: GarmentOrigin }) {
+/**
+ * Where a piece came from. `user` says "you told us you own this" — it only
+ * claims to be a photo when there actually is one.
+ */
+export function OriginBadge({ origin, hasPhoto }: { origin: GarmentOrigin; hasPhoto?: boolean }) {
   const { text, cls } = ORIGIN_LABEL[origin]
-  return <span className={`badge ${cls}`}>{text}</span>
+  return <span className={`badge ${cls}`}>{origin === 'user' && hasPhoto ? 'Your photo' : text}</span>
 }
 
 export function GarmentThumb({
@@ -54,21 +62,24 @@ export function GarmentThumb({
 }) {
   const Tag = onClick ? 'button' : 'div'
   return (
-    <Tag className="thumb" onClick={onClick} type={onClick ? 'button' : undefined}>
+    <Tag className="piece-art" onClick={onClick} type={onClick ? 'button' : undefined}>
       {garment.imageDataUrl ? (
-        <img src={garment.imageDataUrl} alt={garment.label} />
+        <img
+          src={garment.imageDataUrl}
+          alt={garment.label}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
       ) : (
-        <div className="fallback">
-          <div className="swatch-row">
-            {garment.colors.slice(0, 3).map((c) => (
-              <span className="swatch" key={c} style={{ background: c }} />
-            ))}
-          </div>
-          <span>{garment.label}</span>
-        </div>
+        /* No photo: draw the garment so you can still see what it is. */
+        <LookFigure
+          pieces={[{ garment, role: (role as Garment['category']) ?? garment.category }]}
+          className="figure"
+          showSwapMarks={false}
+          focus
+        />
       )}
       <span className="corner">
-        <OriginBadge origin={garment.origin} />
+        <OriginBadge origin={garment.origin} hasPhoto={Boolean(garment.imageDataUrl)} />
       </span>
       {showLabel ? (
         <span className="caption">

@@ -4,9 +4,10 @@ import { useApp } from '../state/AppState'
 import type { Garment } from '../types'
 import { localStylist } from '../lib/stylist'
 import { shareOutfit } from '../lib/share'
-import { OutfitCard } from '../components/OutfitCard'
+import { LookTile, OutfitCard } from '../components/OutfitCard'
 import { GarmentThumb, OriginBadge, TopBar } from '../components/ui'
 import { useToast } from '../components/useToast'
+import type { Outfit } from '../types'
 
 /**
  * Engagement stage: the closet is the landing screen on every return visit.
@@ -20,6 +21,7 @@ export function Closet() {
   const { toast, node: toastNode } = useToast()
   const [tab, setTab] = useState<'fits' | 'pieces'>('fits')
   const [selected, setSelected] = useState<Garment | null>(null)
+  const [opened, setOpened] = useState<Outfit | null>(null)
 
   const own = data.garments.filter((g) => g.origin === 'user')
   const guessed = data.garments.filter((g) => g.origin === 'predicted' && !g.confirmed)
@@ -41,14 +43,43 @@ export function Closet() {
 
   if (!data.profile) return null
 
+  if (opened) {
+    const saved = data.outfits.some((o) => o.id === opened.id)
+    return (
+      <>
+        <TopBar title="The look" onBack={() => setOpened(null)} />
+        <div className="screen stack">
+          <OutfitCard
+            outfit={opened}
+            garments={[...data.garments, ...predictions.map((p) => p.garment)]}
+            onShare={async () => {
+              const result = await shareOutfit(opened, data.garments, opened.photoDataUrl)
+              if (result === 'copied' || result === 'downloaded') toast('Caption copied')
+            }}
+            onReject={
+              saved
+                ? () => {
+                    removeOutfit(opened.id)
+                    setOpened(null)
+                    toast('Fit removed')
+                  }
+                : undefined
+            }
+          />
+        </div>
+        {toastNode}
+      </>
+    )
+  }
+
   if (selected) {
     return (
       <>
-        <TopBar title={selected.label} back />
+        <TopBar title={selected.label} onBack={() => setSelected(null)} />
         <div className="screen stack">
           <GarmentThumb garment={selected} showLabel={false} />
           <div className="row">
-            <OriginBadge origin={selected.origin} />
+            <OriginBadge origin={selected.origin} hasPhoto={Boolean(selected.imageDataUrl)} />
             <span className="badge">{selected.category}</span>
             <span className="badge">{selected.fit}</span>
             <span className="badge">{selected.pattern}</span>
@@ -146,39 +177,37 @@ export function Closet() {
                 </button>
               </div>
             ) : (
-              data.outfits.map((o) => (
-                <div className="stack-sm" key={o.id}>
-                  <div className="row">
-                    <span className={`badge ${o.origin === 'ootd' ? 'mine' : 'ai'}`}>
-                      {o.origin === 'ootd' ? 'Your photo' : 'AI styled'}
-                    </span>
-                    <span className="tiny">{new Date(o.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <OutfitCard
+              <div className="grid-looks">
+                {data.outfits.map((o) => (
+                  <LookTile
+                    key={o.id}
                     outfit={o}
                     garments={data.garments}
-                    onShare={async () => {
-                      const result = await shareOutfit(o, data.garments, o.photoDataUrl)
-                      if (result === 'copied' || result === 'downloaded') toast('Caption copied')
-                    }}
-                    onReject={() => {
-                      removeOutfit(o.id)
-                      toast('Fit removed')
-                    }}
+                    onClick={() => setOpened(o)}
+                    badge={
+                      <span className={`badge ${o.origin === 'ootd' ? 'mine' : 'ai'}`}>
+                        {o.origin === 'ootd' ? 'yours' : 'ai'}
+                      </span>
+                    }
                   />
-                </div>
-              ))
+                ))}
+              </div>
             )}
 
             {suggested.length ? (
               <div className="stack-sm">
-                <span className="eyebrow">Suggestions, assuming our guesses are right</span>
-                {suggested.map((o) => (
-                  <div className="stack-sm" key={o.id}>
-                    <span className="badge ai">AI suggestion · not worn</span>
-                    <OutfitCard outfit={o} garments={[...data.garments, ...predictions.map((p) => p.garment)]} />
-                  </div>
-                ))}
+                <span className="eyebrow">If our guesses are right</span>
+                <div className="grid-looks">
+                  {suggested.map((o) => (
+                    <LookTile
+                      key={o.id}
+                      outfit={o}
+                      garments={[...data.garments, ...predictions.map((p) => p.garment)]}
+                      onClick={() => setOpened(o)}
+                      badge={<span className="badge ai">idea</span>}
+                    />
+                  ))}
+                </div>
               </div>
             ) : null}
           </>

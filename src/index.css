@@ -581,55 +581,307 @@ input[type='range']::-moz-range-thumb {
   border-radius: 50%;
 }
 
-/* ---------------- outfit board ---------------- */
+/* ---------------- looks: the visual core ---------------- */
 
-.board {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  background: var(--raised);
-  padding: 6px;
+:root {
+  --figure-body: #59504a;
+  --stage: #15130f;
 }
 
-.board .slot {
+.figure {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* A look in a grid. Picture first, three words under it. */
+.look-tile {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.look-tile:active {
+  transform: scale(0.985);
+}
+
+.look-art {
   position: relative;
-  aspect-ratio: 1;
-  border-radius: 8px;
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius);
   overflow: hidden;
-  background: #100f0e;
+  background: radial-gradient(120% 80% at 50% 0%, #201d19, var(--stage) 70%);
+  border: 1px solid var(--line);
+}
+
+.look-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.look-flag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--warn);
+  box-shadow: 0 0 0 3px rgb(0 0 0 / 35%);
+}
+
+.look-badge {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+}
+
+.look-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.look-headline {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  line-height: 1.25;
+}
+
+.palette-dots {
+  display: flex;
+  gap: 3px;
+  flex: none;
+}
+
+.palette-dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 12%);
+  display: block;
+}
+
+.grid-looks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 12px;
+}
+
+/* The full look. */
+.look-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.look-stage {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: radial-gradient(120% 80% at 50% 0%, #221e1a, var(--stage) 72%);
+  border: 1px solid var(--line);
+}
+
+.look-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.look-swatches {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  display: flex;
+  gap: 5px;
+}
+
+.look-swatches span {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1px solid rgb(255 255 255 / 16%);
+}
+
+.look-score {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: rgb(0 0 0 / 55%);
+  backdrop-filter: blur(6px);
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--ink-muted);
+}
+
+.look-title {
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+/* Pieces as chips: you can see each garment without reading a list. */
+.piece-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.piece-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--ink-muted);
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 9px 3px 3px;
+}
+
+.piece-chip img,
+.piece-chip i {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  flex: none;
+  border: 1px solid rgb(255 255 255 / 12%);
+}
+
+.piece-chip b {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Numbered one-liners, not prose. */
+.move-strip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.move-strip li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+}
+
+.move-strip .n {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 700;
   display: grid;
   place-items: center;
 }
 
-.board .slot img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.accessory-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.board .slot .role {
-  position: absolute;
-  bottom: 4px;
-  left: 4px;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  background: rgb(0 0 0 / 70%);
-  padding: 2px 5px;
-  border-radius: 4px;
+.accessory {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
   color: var(--ink-muted);
+  border: 1px dashed var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
 }
 
-.board .slot .swap {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  font-size: 9px;
+.accessory i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.nudge-slim {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  background: #201a0e;
+  border: 1px solid #4a3d18;
+  border-radius: var(--radius-sm);
+  padding: 9px 11px;
+  line-height: 1.35;
+}
+
+.nudge-slim.strong {
+  background: #221310;
+  border-color: #5c2c1e;
+}
+
+.nudge-slim .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--warn);
+  flex: none;
+  margin-top: 5px;
+}
+
+.nudge-slim.strong .dot {
   background: var(--accent);
-  color: #1a0d08;
-  padding: 2px 5px;
-  border-radius: 4px;
-  font-weight: 700;
+}
+
+.nudge-slim em {
+  color: var(--ink-faint);
+  font-style: normal;
+}
+
+.look-tools {
+  display: flex;
+  gap: 6px;
+}
+
+.look-tools .tool {
+  appearance: none;
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-muted);
+  font: inherit;
+  font-size: 12px;
+  padding: 7px 4px;
+  cursor: pointer;
+}
+
+.look-tools .tool.danger {
+  color: #e98c7a;
 }
 
 .reasons {
@@ -638,62 +890,12 @@ input[type='range']::-moz-range-thumb {
   display: flex;
   flex-direction: column;
   gap: 7px;
-  font-size: 14px;
-  color: var(--ink);
-}
-
-.reasons li::marker {
-  color: var(--accent);
-}
-
-.moves {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.moves li {
-  display: flex;
-  gap: 9px;
   font-size: 13.5px;
   color: var(--ink-muted);
 }
 
-.moves li::before {
-  content: '→';
-  color: var(--gold);
-  flex: none;
-}
-
-.meter {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11.5px;
-  color: var(--ink-faint);
-}
-
-.meter .track {
-  flex: 1;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--raised);
-  overflow: hidden;
-}
-
-.meter .fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 999px;
-}
-
-.meter .val {
-  width: 30px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+.reasons li::marker {
+  color: var(--accent);
 }
 
 /* ---------------- nudges ---------------- */
@@ -979,4 +1181,87 @@ a.link {
   font-weight: 600;
   z-index: 40;
   box-shadow: 0 8px 24px rgb(0 0 0 / 45%);
+}
+
+/* ---------------- brief chips ---------------- */
+
+.brief-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.brief-chip {
+  font-size: 11.5px;
+  color: var(--ink-muted);
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.brief-chip.accent {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+button.brief-chip {
+  appearance: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.brief-chip.edit {
+  color: var(--ink-faint);
+  border-style: dashed;
+}
+
+.brief-chip.toggle {
+  opacity: 0.5;
+}
+
+.brief-chip.toggle.on {
+  opacity: 1;
+  color: var(--good);
+  border-color: #38502f;
+}
+
+/* A single garment drawn on the figure, for closet thumbnails. */
+.piece-art {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: radial-gradient(120% 80% at 50% 0%, #201d19, var(--stage) 72%);
+  border: 1px solid var(--line);
+  display: block;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+.piece-art .figure {
+  position: absolute;
+  inset: 0;
+}
+
+.piece-art .corner {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+}
+
+.piece-art .caption {
+  position: absolute;
+  inset: auto 0 0 0;
+  background: linear-gradient(to top, rgb(0 0 0 / 88%), transparent);
+  padding: 18px 8px 7px;
+  font-size: 11.5px;
+  text-align: left;
+  line-height: 1.25;
+  z-index: 2;
 }

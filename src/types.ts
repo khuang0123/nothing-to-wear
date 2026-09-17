@@ -36,6 +36,41 @@ export type Coverage = 'minimal' | 'moderate' | 'full'
 /** How the piece sits on the body. Drives proportion and silhouette scoring. */
 export type Fit = 'fitted' | 'straight' | 'relaxed' | 'oversized'
 
+/**
+ * Which silhouette to draw for a piece. Purely visual: the stylist reasons
+ * about categories and numbers, the renderer needs to know that a mini skirt
+ * and a midi skirt are not the same shape on a body.
+ */
+export type GarmentShape =
+  | 'tee'
+  | 'shirt'
+  | 'knit'
+  | 'tank'
+  | 'crop'
+  | 'band'
+  | 'hoodie'
+  | 'trousers'
+  | 'wide-trousers'
+  | 'shorts'
+  | 'skirt-mini'
+  | 'skirt-midi'
+  | 'dress-short'
+  | 'dress-long'
+  | 'gown'
+  | 'jacket'
+  | 'coat'
+  | 'puffer'
+  | 'sneaker'
+  | 'loafer'
+  | 'boot'
+  | 'heel'
+  | 'sandal'
+  | 'bag'
+  | 'belt'
+  | 'scarf'
+  | 'hat'
+  | 'jewellery'
+
 /** How a garment entered the closet. Surfaced in the UI so AI guesses are never passed off as real. */
 export type GarmentOrigin = 'user' | 'predicted' | 'ai-suggested'
 
@@ -51,6 +86,8 @@ export interface Garment {
   coverage: Coverage
   fit: Fit
   fabric: string
+  /** Optional: inferred from category/coverage/fit when absent (older saved data). */
+  shape?: GarmentShape
   origin: GarmentOrigin
   /** Alternative roles this piece can be styled in, e.g. a skirt worn as a tube top. */
   alternateRoles: GarmentCategory[]
@@ -155,6 +192,8 @@ export interface Outfit {
   palette: PaletteSwatch[]
   score: number
   breakdown: ScoreBreakdown
+  /** Three-to-five word caption. The only text shown before the user taps in. */
+  headline: string
   /** Concrete reasons this combination was picked, generated from the real scores. */
   rationale: string[]
   /** Styling instructions, e.g. "half-tuck the shirt". */

@@ -76,10 +76,45 @@ describe('localStylist.generate', () => {
     expect(swaps(styleWith({ adventurousness: 95 }))).toBeGreaterThan(0)
   })
 
-  it('explains a role swap in the styling moves', () => {
+  it('explains how to execute a role swap', () => {
     const outfits = styleWith({ adventurousness: 95 })
     const swapped = outfits.find((o) => o.itemIds.some((id) => o.roles[id] !== closet.find((g) => g.id === id)?.category))
-    expect(swapped?.moves.join(' ')).toMatch(/wear the .* as a /i)
+    expect(swapped).toBeDefined()
+    expect(swapped!.moves.length).toBeGreaterThan(0)
+    // The first move is the swap instruction, phrased as a physical action.
+    expect(swapped!.moves[0]).toMatch(/pull|tuck|wear|leave|close/i)
+  })
+
+  it('keeps every piece of copy short enough to sit under a picture', () => {
+    for (const o of styleWith({ adventurousness: 70 }).concat(styleWith({ adventurousness: 15 }))) {
+      expect(o.headline.length, o.headline).toBeLessThanOrEqual(32)
+      for (const m of o.moves) expect(m.length, m).toBeLessThanOrEqual(60)
+      for (const a of o.accessories) expect(a.label.length, a.label).toBeLessThanOrEqual(48)
+      // Rationale is behind a tap, so it gets more room, but only two lines.
+      expect(o.rationale.length).toBeLessThanOrEqual(2)
+    }
+  })
+
+  it('gives visually different looks distinct headlines', () => {
+    const outfits = styleWith({ adventurousness: 85 })
+    const headlines = outfits.map((o) => o.headline)
+    expect(new Set(headlines).size).toBe(headlines.length)
+  })
+
+  it('does not return the same silhouette structure twice', () => {
+    for (const daring of [10, 50, 90]) {
+      const outfits = styleWith({ adventurousness: daring })
+      const signatures = outfits.map((o) =>
+        o.itemIds
+          .map((id) => {
+            const g = closet.find((x) => x.id === id)!
+            return `${o.roles[id]}:${g.shape}`
+          })
+          .sort()
+          .join('|'),
+      )
+      expect(new Set(signatures).size, `dial ${daring}`).toBe(signatures.length)
+    }
   })
 
   it('never repeats the belt advice as both a move and an accessory', () => {

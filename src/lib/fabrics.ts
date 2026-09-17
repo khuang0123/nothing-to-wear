@@ -5,7 +5,7 @@
  *    tagging a piece is two taps rather than six fields
  */
 
-import type { Coverage, Fit, Formality, GarmentCategory, Warmth } from '../types'
+import type { Coverage, Fit, Formality, GarmentCategory, GarmentShape, Warmth } from '../types'
 
 export interface FabricInfo {
   name: string
@@ -51,6 +51,8 @@ export function fabricInfo(name: string): FabricInfo {
 export interface GarmentTypeInfo {
   label: string
   category: GarmentCategory
+  /** Silhouette the renderer draws for this type. */
+  shape: GarmentShape
   formality: Formality
   warmth: Warmth
   coverage: Coverage
@@ -67,41 +69,41 @@ export interface GarmentTypeInfo {
  * slider possible: a slip dress that can be a top, a skirt that can be a top.
  */
 export const GARMENT_TYPES: GarmentTypeInfo[] = [
-  { label: 'T-shirt', category: 'top', formality: 2, warmth: 2, coverage: 'moderate', fit: 'straight', fabric: 'jersey', alternateRoles: [], tags: ['layerable'] },
-  { label: 'Tank top', category: 'top', formality: 2, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'jersey', alternateRoles: [], tags: ['layerable'] },
-  { label: 'Button-down shirt', category: 'top', formality: 4, warmth: 2, coverage: 'full', fit: 'straight', fabric: 'cotton', alternateRoles: ['outerwear'], tags: ['tuckable', 'layerable'] },
-  { label: 'Blouse', category: 'top', formality: 4, warmth: 2, coverage: 'moderate', fit: 'relaxed', fabric: 'silk', alternateRoles: [], tags: ['tuckable'] },
-  { label: 'Knit sweater', category: 'top', formality: 3, warmth: 4, coverage: 'full', fit: 'relaxed', fabric: 'knit', alternateRoles: [], tags: ['layerable'] },
-  { label: 'Hoodie', category: 'top', formality: 1, warmth: 4, coverage: 'full', fit: 'oversized', fabric: 'fleece', alternateRoles: ['outerwear'], tags: [] },
-  { label: 'Crop top', category: 'top', formality: 2, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'jersey', alternateRoles: [], tags: [] },
-  { label: 'Corset / bustier', category: 'top', formality: 3, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'satin', alternateRoles: [], tags: ['statement'] },
-  { label: 'Jeans', category: 'bottom', formality: 2, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'denim', alternateRoles: [], tags: [] },
-  { label: 'Tailored trousers', category: 'bottom', formality: 4, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'suiting', alternateRoles: [], tags: ['sharp'] },
-  { label: 'Wide-leg trousers', category: 'bottom', formality: 3, warmth: 3, coverage: 'full', fit: 'relaxed', fabric: 'wool', alternateRoles: [], tags: ['volume'] },
-  { label: 'Mini skirt', category: 'bottom', formality: 3, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'cotton', alternateRoles: ['top'], tags: [] },
-  { label: 'Midi skirt', category: 'bottom', formality: 3, warmth: 2, coverage: 'full', fit: 'relaxed', fabric: 'silk', alternateRoles: ['top', 'dress'], tags: ['volume'] },
-  { label: 'Shorts', category: 'bottom', formality: 2, warmth: 1, coverage: 'minimal', fit: 'straight', fabric: 'cotton', alternateRoles: [], tags: [] },
-  { label: 'Sweatpants', category: 'bottom', formality: 1, warmth: 4, coverage: 'full', fit: 'relaxed', fabric: 'fleece', alternateRoles: [], tags: [] },
-  { label: 'Slip dress', category: 'dress', formality: 4, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'satin', alternateRoles: ['top'], tags: ['statement'] },
-  { label: 'Shirt dress', category: 'dress', formality: 3, warmth: 2, coverage: 'full', fit: 'relaxed', fabric: 'cotton', alternateRoles: ['outerwear'], tags: ['layerable'] },
-  { label: 'Knit dress', category: 'dress', formality: 3, warmth: 4, coverage: 'full', fit: 'fitted', fabric: 'knit', alternateRoles: [], tags: [] },
-  { label: 'Gown', category: 'dress', formality: 5, warmth: 2, coverage: 'moderate', fit: 'fitted', fabric: 'satin', alternateRoles: [], tags: ['statement'] },
-  { label: 'Blazer', category: 'outerwear', formality: 4, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'suiting', alternateRoles: ['top'], tags: ['sharp'] },
-  { label: 'Denim jacket', category: 'outerwear', formality: 2, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'denim', alternateRoles: [], tags: [] },
-  { label: 'Leather jacket', category: 'outerwear', formality: 3, warmth: 3, coverage: 'full', fit: 'fitted', fabric: 'leather', alternateRoles: [], tags: ['statement'] },
-  { label: 'Trench coat', category: 'outerwear', formality: 4, warmth: 3, coverage: 'full', fit: 'relaxed', fabric: 'canvas', alternateRoles: [], tags: ['volume'] },
-  { label: 'Puffer coat', category: 'outerwear', formality: 2, warmth: 5, coverage: 'full', fit: 'oversized', fabric: 'down', alternateRoles: [], tags: ['volume'] },
-  { label: 'Overcoat', category: 'outerwear', formality: 4, warmth: 5, coverage: 'full', fit: 'straight', fabric: 'wool', alternateRoles: [], tags: [] },
-  { label: 'Sneakers', category: 'shoes', formality: 2, warmth: 2, coverage: 'full', fit: 'straight', fabric: 'canvas', alternateRoles: [], tags: [] },
-  { label: 'Loafers', category: 'shoes', formality: 4, warmth: 2, coverage: 'full', fit: 'straight', fabric: 'leather', alternateRoles: [], tags: ['sharp'] },
-  { label: 'Boots', category: 'shoes', formality: 3, warmth: 4, coverage: 'full', fit: 'straight', fabric: 'leather', alternateRoles: [], tags: ['statement'] },
-  { label: 'Heels', category: 'shoes', formality: 5, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'leather', alternateRoles: [], tags: ['statement'] },
-  { label: 'Sandals', category: 'shoes', formality: 2, warmth: 1, coverage: 'minimal', fit: 'straight', fabric: 'leather', alternateRoles: [], tags: [] },
-  { label: 'Bag', category: 'bag', formality: 3, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'leather', alternateRoles: [], tags: [] },
-  { label: 'Belt', category: 'accessory', formality: 3, warmth: 3, coverage: 'full', fit: 'fitted', fabric: 'leather', alternateRoles: [], tags: ['waist'] },
-  { label: 'Scarf', category: 'accessory', formality: 3, warmth: 4, coverage: 'full', fit: 'relaxed', fabric: 'wool', alternateRoles: [], tags: [] },
-  { label: 'Jewellery', category: 'accessory', formality: 3, warmth: 3, coverage: 'full', fit: 'fitted', fabric: 'other', alternateRoles: [], tags: [] },
-  { label: 'Hat', category: 'accessory', formality: 3, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'wool', alternateRoles: [], tags: ['statement'] },
+  { label: 'T-shirt', category: 'top', shape: 'tee', formality: 2, warmth: 2, coverage: 'moderate', fit: 'straight', fabric: 'jersey', alternateRoles: [], tags: ['layerable'] },
+  { label: 'Tank top', category: 'top', shape: 'tank', formality: 2, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'jersey', alternateRoles: [], tags: ['layerable'] },
+  { label: 'Button-down shirt', category: 'top', shape: 'shirt', formality: 4, warmth: 2, coverage: 'full', fit: 'straight', fabric: 'cotton', alternateRoles: ['outerwear'], tags: ['tuckable', 'layerable'] },
+  { label: 'Blouse', category: 'top', shape: 'shirt', formality: 4, warmth: 2, coverage: 'moderate', fit: 'relaxed', fabric: 'silk', alternateRoles: [], tags: ['tuckable'] },
+  { label: 'Knit sweater', category: 'top', shape: 'knit', formality: 3, warmth: 4, coverage: 'full', fit: 'relaxed', fabric: 'knit', alternateRoles: [], tags: ['layerable'] },
+  { label: 'Hoodie', category: 'top', shape: 'hoodie', formality: 1, warmth: 4, coverage: 'full', fit: 'oversized', fabric: 'fleece', alternateRoles: ['outerwear'], tags: [] },
+  { label: 'Crop top', category: 'top', shape: 'crop', formality: 2, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'jersey', alternateRoles: [], tags: [] },
+  { label: 'Corset / bustier', category: 'top', shape: 'band', formality: 3, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'satin', alternateRoles: [], tags: ['statement'] },
+  { label: 'Jeans', category: 'bottom', shape: 'trousers', formality: 2, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'denim', alternateRoles: [], tags: [] },
+  { label: 'Tailored trousers', category: 'bottom', shape: 'trousers', formality: 4, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'suiting', alternateRoles: [], tags: ['sharp'] },
+  { label: 'Wide-leg trousers', category: 'bottom', shape: 'wide-trousers', formality: 3, warmth: 3, coverage: 'full', fit: 'relaxed', fabric: 'wool', alternateRoles: [], tags: ['volume'] },
+  { label: 'Mini skirt', category: 'bottom', shape: 'skirt-mini', formality: 3, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'cotton', alternateRoles: ['top'], tags: [] },
+  { label: 'Midi skirt', category: 'bottom', shape: 'skirt-midi', formality: 3, warmth: 2, coverage: 'full', fit: 'relaxed', fabric: 'silk', alternateRoles: ['top', 'dress'], tags: ['volume'] },
+  { label: 'Shorts', category: 'bottom', shape: 'shorts', formality: 2, warmth: 1, coverage: 'minimal', fit: 'straight', fabric: 'cotton', alternateRoles: [], tags: [] },
+  { label: 'Sweatpants', category: 'bottom', shape: 'wide-trousers', formality: 1, warmth: 4, coverage: 'full', fit: 'relaxed', fabric: 'fleece', alternateRoles: [], tags: [] },
+  { label: 'Slip dress', category: 'dress', shape: 'dress-long', formality: 4, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'satin', alternateRoles: ['top'], tags: ['statement'] },
+  { label: 'Shirt dress', category: 'dress', shape: 'dress-short', formality: 3, warmth: 2, coverage: 'full', fit: 'relaxed', fabric: 'cotton', alternateRoles: ['outerwear'], tags: ['layerable'] },
+  { label: 'Knit dress', category: 'dress', shape: 'dress-short', formality: 3, warmth: 4, coverage: 'full', fit: 'fitted', fabric: 'knit', alternateRoles: [], tags: [] },
+  { label: 'Gown', category: 'dress', shape: 'gown', formality: 5, warmth: 2, coverage: 'moderate', fit: 'fitted', fabric: 'satin', alternateRoles: [], tags: ['statement'] },
+  { label: 'Blazer', category: 'outerwear', shape: 'jacket', formality: 4, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'suiting', alternateRoles: ['top'], tags: ['sharp'] },
+  { label: 'Denim jacket', category: 'outerwear', shape: 'jacket', formality: 2, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'denim', alternateRoles: [], tags: [] },
+  { label: 'Leather jacket', category: 'outerwear', shape: 'jacket', formality: 3, warmth: 3, coverage: 'full', fit: 'fitted', fabric: 'leather', alternateRoles: [], tags: ['statement'] },
+  { label: 'Trench coat', category: 'outerwear', shape: 'coat', formality: 4, warmth: 3, coverage: 'full', fit: 'relaxed', fabric: 'canvas', alternateRoles: [], tags: ['volume'] },
+  { label: 'Puffer coat', category: 'outerwear', shape: 'puffer', formality: 2, warmth: 5, coverage: 'full', fit: 'oversized', fabric: 'down', alternateRoles: [], tags: ['volume'] },
+  { label: 'Overcoat', category: 'outerwear', shape: 'coat', formality: 4, warmth: 5, coverage: 'full', fit: 'straight', fabric: 'wool', alternateRoles: [], tags: [] },
+  { label: 'Sneakers', category: 'shoes', shape: 'sneaker', formality: 2, warmth: 2, coverage: 'full', fit: 'straight', fabric: 'canvas', alternateRoles: [], tags: [] },
+  { label: 'Loafers', category: 'shoes', shape: 'loafer', formality: 4, warmth: 2, coverage: 'full', fit: 'straight', fabric: 'leather', alternateRoles: [], tags: ['sharp'] },
+  { label: 'Boots', category: 'shoes', shape: 'boot', formality: 3, warmth: 4, coverage: 'full', fit: 'straight', fabric: 'leather', alternateRoles: [], tags: ['statement'] },
+  { label: 'Heels', category: 'shoes', shape: 'heel', formality: 5, warmth: 1, coverage: 'minimal', fit: 'fitted', fabric: 'leather', alternateRoles: [], tags: ['statement'] },
+  { label: 'Sandals', category: 'shoes', shape: 'sandal', formality: 2, warmth: 1, coverage: 'minimal', fit: 'straight', fabric: 'leather', alternateRoles: [], tags: [] },
+  { label: 'Bag', category: 'bag', shape: 'bag', formality: 3, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'leather', alternateRoles: [], tags: [] },
+  { label: 'Belt', category: 'accessory', shape: 'belt', formality: 3, warmth: 3, coverage: 'full', fit: 'fitted', fabric: 'leather', alternateRoles: [], tags: ['waist'] },
+  { label: 'Scarf', category: 'accessory', shape: 'scarf', formality: 3, warmth: 4, coverage: 'full', fit: 'relaxed', fabric: 'wool', alternateRoles: [], tags: [] },
+  { label: 'Jewellery', category: 'accessory', shape: 'jewellery', formality: 3, warmth: 3, coverage: 'full', fit: 'fitted', fabric: 'other', alternateRoles: [], tags: [] },
+  { label: 'Hat', category: 'accessory', shape: 'hat', formality: 3, warmth: 3, coverage: 'full', fit: 'straight', fabric: 'wool', alternateRoles: [], tags: ['statement'] },
 ]
 
 export function garmentType(label: string): GarmentTypeInfo | undefined {

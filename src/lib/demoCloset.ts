@@ -43,6 +43,7 @@ export function demoGarments(now = Date.now()): Garment[] {
         id: `demo_${i}`,
         label: `${colorName(seed.colors[0])} ${t.label.toLowerCase()}`,
         category: t.category,
+        shape: t.shape,
         colors: seed.colors,
         pattern: seed.pattern ?? 'solid',
         formality: t.formality,

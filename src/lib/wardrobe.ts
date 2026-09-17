@@ -154,6 +154,7 @@ function templateToGarment(t: GarmentTypeInfo, hex: string): Garment {
     id: `hypothetical_${t.label}`,
     label: t.label,
     category: t.category,
+    shape: t.shape,
     colors: [hex],
     pattern: 'solid',
     formality: t.formality,

@@ -33,6 +33,7 @@ export function makeGarment(typeLabel: string, patch: Partial<Garment> = {}): Ga
     id: patch.id ?? `item_${typeLabel.replace(/\W+/g, '_')}`,
     label: patch.label ?? typeLabel.toLowerCase(),
     category: t.category,
+    shape: t.shape,
     colors: ['#2e2e33'],
     pattern: 'solid',
     formality: t.formality,

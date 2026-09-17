@@ -8,8 +8,8 @@ import { checkGarment } from '../lib/guardrails'
 import { fileToDataUrl } from '../lib/imageColors'
 import { shareOutfit } from '../lib/share'
 import { newId } from '../lib/storage'
-import { OutfitCard } from '../components/OutfitCard'
-import { NudgeList, TopBar } from '../components/ui'
+import { LookTile, OutfitCard } from '../components/OutfitCard'
+import { GarmentThumb, NudgeList, TopBar } from '../components/ui'
 import { useToast } from '../components/useToast'
 
 /**
@@ -24,9 +24,9 @@ export function Style() {
 
   const [pinned, setPinned] = useState<string[]>([])
   const [nonce, setNonce] = useState(0)
-  const [showAllPieces, setShowAllPieces] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
   const [confirming, setConfirming] = useState<Outfit | null>(null)
-  const [detail, setDetail] = useState<string | null>(null)
+  const [opened, setOpened] = useState<Outfit | null>(null)
 
   const wearable = useMemo(
     () => data.garments.filter((g) => g.origin !== 'predicted' || g.confirmed),
@@ -69,6 +69,7 @@ export function Style() {
       palette: [],
       score: 1,
       breakdown: { context: 1, climate: 1, color: 1, vibe: 1, silhouette: 1, daring: 1 },
+      headline: 'Your outfit of the day',
       rationale: ['Your own outfit of the day.'],
       moves: [],
       vibeMatch: [],
@@ -101,6 +102,29 @@ export function Style() {
             </button>
           </div>
         </div>
+      </>
+    )
+  }
+
+  if (opened) {
+    return (
+      <>
+        <TopBar title="The look" onBack={() => setOpened(null)} />
+        <div className="screen stack">
+          <OutfitCard
+            outfit={opened}
+            garments={data.garments}
+            onSave={() => {
+              setConfirming(opened)
+              setOpened(null)
+            }}
+            onShare={async () => {
+              const result = await shareOutfit(opened, data.garments, opened.photoDataUrl)
+              if (result === 'copied' || result === 'downloaded') toast('Caption copied')
+            }}
+          />
+        </div>
+        {toastNode}
       </>
     )
   }
@@ -159,73 +183,66 @@ export function Style() {
         }
       />
       <div className="screen stack">
-        <div className="card stack-sm">
-          <span className="eyebrow">Today's brief</span>
-          <p style={{ fontSize: 14 }}>
-            {ctx.label}
-            {ctx.cues.length ? ` — ${ctx.cues.join(', ')}` : ''} ·{' '}
+        {/* The brief, as chips. One line, no paragraph. */}
+        <div className="brief-row">
+          <span className="brief-chip">{ctx.label}</span>
+          {ctx.cues.map((c) => (
+            <span className="brief-chip" key={c}>
+              {c}
+            </span>
+          ))}
+          <span className="brief-chip">
             {data.preferences.adventurousness > 66
               ? 'rule-breaking'
               : data.preferences.adventurousness > 33
                 ? 'open to strange'
-                : 'flattering and safe'}
-            {data.preferences.vibe.trim() ? ` · "${data.preferences.vibe.trim()}"` : ''}
-          </p>
-          <div className="row">
-            <button className="btn btn-sm btn-ghost" onClick={() => navigate('/home')}>
-              Change the brief
-            </button>
-            <label className="switch" style={{ marginLeft: 'auto' }}>
-              <input
-                type="checkbox"
-                checked={data.preferences.guardrails}
-                onChange={(e) => setPreferences({ guardrails: e.target.checked })}
-              />
-              <span className="tiny">nudges</span>
-            </label>
-          </div>
+                : 'safe'}
+          </span>
+          {data.preferences.vibe.trim() ? (
+            <span className="brief-chip accent">{data.preferences.vibe.trim()}</span>
+          ) : null}
+          <button
+            className={`brief-chip toggle${data.preferences.guardrails ? ' on' : ''}`}
+            onClick={() => setPreferences({ guardrails: !data.preferences.guardrails })}
+            aria-pressed={data.preferences.guardrails}
+          >
+            nudges
+          </button>
+          <button className="brief-chip edit" onClick={() => navigate('/home')}>
+            edit
+          </button>
         </div>
 
+        {/* Optional and collapsed, so the looks stay the hero of the screen. */}
         <div className="stack-sm">
-          <div className="row-between">
-            <span className="eyebrow">Insist on a piece (optional)</span>
-            {wearable.length > 9 ? (
-              <button className="btn btn-sm btn-ghost" onClick={() => setShowAllPieces((v) => !v)}>
-                {showAllPieces ? 'Show fewer' : `All ${wearable.length}`}
-              </button>
-            ) : null}
-          </div>
-          <div className="grid-3">
-            {(showAllPieces ? wearable : wearable.slice(0, 9)).map((g) => (
-              <div key={g.id} style={{ position: 'relative' }}>
-                <button
-                  className="thumb"
+          <button className="brief-chip edit" onClick={() => setPickerOpen((v) => !v)}>
+            {pinned.length
+              ? `Must include: ${pinned.length} piece${pinned.length === 1 ? '' : 's'}`
+              : '+ insist on a piece'}
+          </button>
+          {pickerOpen ? (
+            <div className="grid-3">
+              {wearable.map((g) => (
+                <div
+                  key={g.id}
                   style={{
-                    outline: pinned.includes(g.id) ? '2px solid var(--accent)' : undefined,
+                    borderRadius: 11,
+                    outline: pinned.includes(g.id) ? '2px solid var(--accent)' : 'none',
                     outlineOffset: 1,
                   }}
-                  onClick={() =>
-                    setPinned((prev) =>
-                      prev.includes(g.id) ? prev.filter((p) => p !== g.id) : [...prev, g.id],
-                    )
-                  }
                 >
-                  {g.imageDataUrl ? (
-                    <img src={g.imageDataUrl} alt={g.label} />
-                  ) : (
-                    <span
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        background: `linear-gradient(140deg, ${g.colors[0]}, ${g.colors[1] ?? g.colors[0]})`,
-                      }}
-                    />
-                  )}
-                  <span className="caption">{g.label}</span>
-                </button>
-              </div>
-            ))}
-          </div>
+                  <GarmentThumb
+                    garment={g}
+                    onClick={() =>
+                      setPinned((prev) =>
+                        prev.includes(g.id) ? prev.filter((p) => p !== g.id) : [...prev, g.id],
+                      )
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         {pinnedWarnings.length ? (
@@ -239,33 +256,17 @@ export function Style() {
         {outfits.length === 0 ? (
           <div className="empty">
             <span className="big">🤔</span>
-            <h2>Nothing clears the bar for this brief</h2>
+            <h2>Nothing clears the bar</h2>
             <p className="muted">
-              Either loosen the occasion, turn the personality dial up so role swaps are allowed, or
-              unpin a piece.
+              Loosen the occasion, turn the dial up, or unpin a piece.
             </p>
           </div>
         ) : (
-          outfits.map((o) => (
-            <div className="stack-sm" key={o.id}>
-              <OutfitCard
-                outfit={o}
-                garments={data.garments}
-                showScores={detail === o.id}
-                onSave={() => setConfirming(o)}
-                onShare={async () => {
-                  const result = await shareOutfit(o, data.garments, o.photoDataUrl)
-                  if (result === 'copied' || result === 'downloaded') toast('Caption copied')
-                }}
-              />
-              <button
-                className="btn btn-sm btn-ghost"
-                onClick={() => setDetail(detail === o.id ? null : o.id)}
-              >
-                {detail === o.id ? 'Hide the scoring' : 'Why did this win?'}
-              </button>
-            </div>
-          ))
+          <div className="grid-looks">
+            {outfits.map((o) => (
+              <LookTile key={o.id} outfit={o} garments={data.garments} onClick={() => setOpened(o)} />
+            ))}
+          </div>
         )}
 
         <div className="sticky-action stack-sm">

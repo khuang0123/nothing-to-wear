@@ -258,6 +258,7 @@ function TagForm({
     onSave({
       label: `${colorName(colors[0] ?? '#888')} ${type.label.toLowerCase()}`,
       category: type.category,
+      shape: type.shape,
       colors,
       pattern,
       formality,

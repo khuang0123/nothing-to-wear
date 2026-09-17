@@ -38,6 +38,7 @@ import {
 import { CLIMATE_WARMTH, contextProfile, type ContextProfile } from './context'
 import { FIT_VOLUME, fabricInfo } from './fabrics'
 import { checkOutfit } from './guardrails'
+import { SHAPE_NOUN, shapeFor, shapeForRole } from './silhouette'
 import { NEUTRAL_VIBE, parseVibe, type ParsedVibe, type VibeAxes } from './lexicon'
 
 export interface StylistInput {
@@ -498,13 +499,14 @@ function pick<T>(options: T[], seed: number): T {
   return options[seed % options.length]
 }
 
+/** Kept short: these are captions under a picture, not paragraphs. */
 const SWAP_HOWTO: Record<string, string> = {
-  'bottom->top': 'step into it, pull it up to just under the arms and belt the waistband so it stays put',
-  'dress->top': 'tuck the whole dress into the waistband so only the bodice reads as a top',
-  'outerwear->top': 'wear it closed with nothing underneath and let the lapel be the neckline',
-  'top->outerwear': 'leave it unbuttoned over the top as a shirt-jacket, sleeves pushed up',
-  'bottom->dress': 'pull it up to the chest and let it fall as a column',
-  'dress->outerwear': 'wear it open over the look like a duster',
+  'bottom->top': 'Pull it up under the arms, belt the waistband',
+  'dress->top': 'Tuck the whole dress in — only the bodice shows',
+  'outerwear->top': 'Wear it closed, nothing underneath',
+  'top->outerwear': 'Leave it open as a shirt-jacket, sleeves pushed',
+  'bottom->dress': 'Pull it to the chest, let it fall as a column',
+  'dress->outerwear': 'Wear it open over the look, like a duster',
 }
 
 function moveLines(pieces: OutfitPiece[], shape: OutfitShape, profile: UserProfile, seed: number): string[] {
@@ -512,9 +514,7 @@ function moveLines(pieces: OutfitPiece[], shape: OutfitShape, profile: UserProfi
   for (const p of pieces) {
     if (p.garment.category === p.role) continue
     const how = SWAP_HOWTO[`${p.garment.category}->${p.role}`]
-    moves.push(
-      `Wear the ${p.garment.label.toLowerCase()} as a ${p.role}${how ? ` — ${how}` : ''}.`,
-    )
+    moves.push(how ?? `Wear it as a ${p.role}`)
   }
 
   const top = pieces.find((p) => p.role === 'top')
@@ -523,31 +523,19 @@ function moveLines(pieces: OutfitPiece[], shape: OutfitShape, profile: UserProfi
   const shoes = pieces.find((p) => p.role === 'shoes')
 
   if (top && bottom && top.garment.tags.includes('tuckable') && bottom.garment.formality >= 3) {
-    moves.push(
-      pick(
-        [
-          'Half-tuck the front hem only — it shortens the torso without looking fussy.',
-          'Full tuck with the waistband showing; it is the difference between dressed and just wearing clothes.',
-        ],
-        seed,
-      ),
-    )
+    moves.push(pick(['Half-tuck the front hem only', 'Full tuck, waistband showing'], seed))
   }
   if (shape.volumeTop > 0.65 && shape.volumeBottom > 0.65) {
-    moves.push('Cuff the sleeve once and the hem twice so the volume reads chosen, not borrowed.')
+    moves.push('Cuff the sleeve once, the hem twice')
   }
   if (outer) {
-    moves.push(
-      shape.warmth > 3.8
-        ? 'Close the coat and belt it so the silhouette stays deliberate.'
-        : 'Wear the outer layer open — the vertical gap is what makes it look long.',
-    )
+    moves.push(shape.warmth > 3.8 ? 'Close it and belt it' : 'Wear the outer layer open')
   }
   if (shoes && bottom && bottom.garment.fit === 'relaxed') {
-    moves.push(`Let the hem break on the ${shoes.garment.label.toLowerCase()}, not above them.`)
+    moves.push('Let the hem break on the shoe, not above')
   }
   if (!shape.waistDefined && (profile.biometrics.bodyShape === 'rectangle' || profile.biometrics.bodyShape === 'hourglass')) {
-    moves.push('Add a belt at the natural waist — it is the one line this look is missing.')
+    moves.push('Belt it at the natural waist')
   }
   return moves.slice(0, 3)
 }
@@ -639,10 +627,69 @@ function rationaleLines(
     })
   }
 
+  // Two lines maximum: this sits behind a tap, under a picture that has
+  // already done most of the explaining.
   return lines
     .sort((x, y) => y.weight - x.weight)
-    .slice(0, 3)
+    .slice(0, 2)
     .map((l) => l.text)
+}
+
+/**
+ * The three-to-five word caption shown under the figure. It names whatever is
+ * most visually distinctive about the look, so the words add to the picture
+ * instead of restating it.
+ */
+/**
+ * Caption options in preference order. The generator takes the first one not
+ * already used, so two looks never carry the same words — a repeated caption
+ * makes distinct looks read as duplicates.
+ */
+function headlineOptions(pieces: OutfitPiece[], shape: OutfitShape): string[] {
+  const options: string[] = []
+  const swapped = pieces.find((p) => p.garment.category !== p.role)
+
+  if (swapped) {
+    const noun = SHAPE_NOUN[shapeFor(swapped.garment)]
+    const colour = colorName(swapped.garment.colors[0] ?? '#888')
+    const withColour = `${colour} ${noun} as a ${swapped.role}`
+    if (withColour.length <= 30) options.push(withColour)
+    options.push(`${noun} as a ${swapped.role}`)
+    const other = pieces.find((p) => p !== swapped && p.role !== 'shoes')
+    if (other) {
+      options.push(`${noun} over ${colorName(other.garment.colors[0] ?? '#888')}`)
+    }
+  }
+
+  const unique = shape.colors.filter((c, i, arr) => arr.indexOf(c) === i)
+  const [c1, c2] = unique
+  if (c1 && c2) {
+    const n1 = colorName(c1)
+    const n2 = colorName(c2)
+    switch (relationBetween(c1, c2)) {
+      case 'monochrome':
+        options.push(`Tonal ${n1}`)
+        break
+      case 'neutral-anchored':
+        options.push(isNeutral(c1) ? `${n2} on ${n1}` : `${n1} on ${n2}`)
+        break
+      case 'complementary':
+        options.push(`${n1} against ${n2}`)
+        break
+      case 'clash':
+        options.push(`${n1} clashing ${n2}`)
+        break
+      default:
+        options.push(`${n1} and ${n2}`)
+    }
+    // Last resort: name the third colour so the caption is at least specific.
+    if (unique[2]) options.push(`${n1}, ${n2}, ${colorName(unique[2])}`)
+  } else if (c1) {
+    options.push(`All ${colorName(c1)}`)
+  }
+
+  options.push('A look from your closet')
+  return options.map(cap)
 }
 
 function accessoryIdeas(
@@ -761,20 +808,50 @@ export const localStylist: StylistEngine = {
 
     scored.sort((a, b) => b.score - a.score)
 
-    // Diversify: no two suggestions may share more than half their pieces.
+    /**
+     * Diversify on what the user can actually see. Item overlap alone is not
+     * enough: four looks can share no pieces and still be the same outfit
+     * visually (same skeleton, same swap, same silhouettes). So the first pass
+     * demands a distinct visual signature, and only if that cannot fill the
+     * quota do we fall back to plain item-overlap.
+     */
+    const signature = (c: ScoredCandidate) =>
+      [
+        c.skeleton.name,
+        ...c.pieces
+          .map((p) => `${p.role}:${shapeForRole(p.garment, p.role)}`)
+          .sort(),
+      ].join('|')
+
     const chosen: ScoredCandidate[] = []
+    const takenSignatures = new Set<string>()
+    const overlaps = (c: ScoredCandidate) => {
+      const ids = c.pieces.map((p) => p.garment.id)
+      return chosen.some((x) => jaccard(ids, x.pieces.map((p) => p.garment.id)) > 0.5)
+    }
+
     for (const candidate of scored) {
-      const ids = candidate.pieces.map((p) => p.garment.id)
-      if (chosen.some((c) => jaccard(ids, c.pieces.map((p) => p.garment.id)) > 0.5)) continue
-      chosen.push(candidate)
       if (chosen.length >= limit) break
+      const sig = signature(candidate)
+      if (takenSignatures.has(sig) || overlaps(candidate)) continue
+      takenSignatures.add(sig)
+      chosen.push(candidate)
+    }
+    for (const candidate of scored) {
+      if (chosen.length >= limit) break
+      if (chosen.includes(candidate) || overlaps(candidate)) continue
+      chosen.push(candidate)
     }
 
     const now = Date.now()
+    const usedHeadlines = new Set<string>()
     return chosen.map((c, index) => {
       const id = `fit_${now.toString(36)}_${index}`
       const seed = hash(id + c.pieces.map((p) => p.garment.id).join('|'))
       const palette = buildPalette(c.shape.colors, prefs.adventurousness)
+      const options = headlineOptions(c.pieces, c.shape)
+      const headline = options.find((o) => !usedHeadlines.has(o)) ?? `${options[0]} ${index + 1}`
+      usedHeadlines.add(headline)
       const moves = moveLines(c.pieces, c.shape, profile, seed)
       // Don't say the same thing twice: a styling move about the waist makes
       // the belt accessory idea redundant.
@@ -789,6 +866,7 @@ export const localStylist: StylistEngine = {
         palette,
         score: Math.round(c.score * 100) / 100,
         breakdown: c.breakdown,
+        headline: headline,
         rationale: rationaleLines(c, ctx, vibe, profile, prefs, seed),
         moves,
         vibeMatch: vibe.matched,

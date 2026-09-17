@@ -33,6 +33,7 @@ describe('captionFor', () => {
     palette: [],
     score: 0.8,
     breakdown: { context: 1, climate: 1, color: 1, vibe: 1, silhouette: 1, daring: 1 },
+    headline: 'Tonal black',
     rationale: [],
     moves: [],
     vibeMatch: ['tailored and crisp'],
