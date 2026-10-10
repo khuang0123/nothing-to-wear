@@ -9,12 +9,21 @@ This is an MVP. It runs entirely in the browser with no backend, no accounts and
 image uploads: demographics, biometrics and closet photos stay in `localStorage` on the
 device, which is the right default for the data the app asks for.
 
+**Requires Node `^20.19 || >=22.12`** (Vite 8 enforces it). On anything older the build
+tool dies with `does not provide an export named 'styleText'`, which looks like a broken
+project but is just a stale runtime — `npm install` and `npm run dev` both refuse early
+with instructions instead. There is a `.nvmrc`, so `nvm use` picks the right one.
+
 ```bash
+nvm use            # or: nvm install 22
 npm install
 npm run dev        # http://localhost:5173
 npm test           # 111 unit tests over the styling engine and renderer
 npm run build      # typecheck + production bundle
 ```
+
+> On macOS with conda active, `which node` may point into `anaconda3/` and shadow nvm's
+> Node. Either `conda deactivate` first, or `conda install -c conda-forge nodejs=22`.
 
 On the first screen there is a **Load sample closet** button — 16 tagged pieces and a
 sample profile, so the styling engine is explorable without photographing anything.
